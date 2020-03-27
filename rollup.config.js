@@ -5,9 +5,23 @@ import * as meta from "./package.json";
 
 const copyright = `// ${meta.homepage} v${meta.version} Copyright ${(new Date).getFullYear()} ${meta.author.name}`;
 
+function onwarn(message, warn) {
+  if (message.code === "CIRCULAR_DEPENDENCY") return;
+  warn(message);
+}
+
 export default [
   {
-    input: "index",
+    input: "index.js",
+    external: Object.keys(meta.dependencies || {}).filter(key => /^d3-/.test(key)),
+    output: {
+      file: "dist/d3.node.js",
+      format: "cjs"
+    },
+    onwarn
+  },
+  {
+    input: "index.js",
     plugins: [
       node(),
       ascii()
@@ -19,10 +33,11 @@ export default [
       format: "umd",
       indent: false,
       name: "d3"
-    }
+    },
+    onwarn
   },
   {
-    input: "index",
+    input: "index.js",
     plugins: [
       node(),
       ascii(),
@@ -34,6 +49,7 @@ export default [
       format: "umd",
       indent: false,
       name: "d3"
-    }
+    },
+    onwarn
   }
 ];
